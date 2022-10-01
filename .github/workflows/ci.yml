@@ -1,10 +1,14 @@
-# gh-release-install-action
+name: CI
 
-```yaml
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: jooola/gh-release-install-action@main
         with:
@@ -13,4 +17,3 @@ jobs:
           destination: /usr/local/bin/shfmt
 
       - run: shfmt --version
-```

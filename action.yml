@@ -1,0 +1,63 @@
+name: Install Github releases assets in your workflows
+description: Install Github releases assets on your workflows
+author: jooola
+
+inputs:
+  repository:
+    description: >
+      Github REPOSITORY org/repo to get the release from.
+    required: true
+
+  asset:
+    description: >
+      Release ASSET filename. May contain variables such as '{version}' or '{tag}'.
+    required: true
+
+  extract:
+    description: >
+      Extract the <filename> from the release asset archive and install the extracted
+      file instead. May contain variables such as '{version}' or '{tag}'.
+
+  destination:
+    description: >
+      Path to save the downloaded file. If DESTINATION is a directory, the asset name
+      will be used as filename in that directory. May contain variables such as
+      '{version}' or '{tag}'.
+    required: true
+
+  version:
+    description: >
+      Desired release version to install. When using 'latest' the installer will guess
+      the latest version from the Github API.
+    default: latest
+
+branding:
+  icon: archive
+  color: purple
+
+runs:
+  using: composite
+  steps:
+    - name: Setup gh-release-install
+      run: |
+        python -m venv ~/.gh-release-install
+        ~/.gh-release-install/bin/pip install gh-release-install==0.9.0
+      shell: bash
+
+    - name: Install ${{ inputs.destination }}
+      run: |
+        args=(
+          '${{ inputs.repository }}'
+          '${{ inputs.asset }}'
+        )
+        if [[ -v VERBOSE ]]; then
+          args+=(--extract '${{ inputs.extract }}')
+        fi
+        args+=(
+          '${{ inputs.destination }}'
+          --version '${{ inputs.version }}'
+          --version-file '{destination}.version'
+        )
+
+        sudo -E ~/.gh-release-install/bin/gh-release-install -v "${args[@]}"
+      shell: bash
